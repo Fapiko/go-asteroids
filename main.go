@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/fapiko/go-learn-gl/opengl-tutorial/common"
+	"github.com/fapiko/go-asteroids/camera"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
@@ -36,65 +36,6 @@ func main() {
 	// Render scoreboard
 
 	// Render lives
-
-}
-
-type GlRenderable interface {
-	Render()
-}
-
-type Triangle2D struct {
-	vertices                  []float32
-	vertexArrayObjectId       uint32
-	vertexBufferObjectId      uint32
-	programId                 uint32
-	vertexPositionAttributeId uint32
-}
-
-func NewTriangle2D(x1 float32, y1 float32, x2 float32, y2 float32, x3 float32, y3 float32) *Triangle2D {
-
-	vertices := []float32{
-		x1, y1, 0,
-		x2, y2, 0,
-		x3, y3, 0,
-	}
-
-	programId := common.LoadShaders("shaders/SimpleVertexShader.vertexshader",
-		"shaders/SimpleFragmentShader.fragmentshader")
-
-	var vertexArrayObjectId uint32
-	gl.GenVertexArrays(1, &vertexArrayObjectId)
-	gl.BindVertexArray(vertexArrayObjectId)
-	defer gl.BindVertexArray(0)
-
-	var vertexBufferObjectId uint32
-	gl.GenBuffers(1, &vertexBufferObjectId)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObjectId)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
-
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, nil)
-
-	vertexPositionAttributeId := uint32(gl.GetAttribLocation(programId, gl.Str("vertexPosition_modelspace\x00")))
-	gl.EnableVertexArrayAttrib(vertexArrayObjectId, vertexPositionAttributeId)
-
-	triangle := &Triangle2D{
-		vertices:                  vertices,
-		vertexArrayObjectId:       vertexArrayObjectId,
-		vertexBufferObjectId:      vertexBufferObjectId,
-		vertexPositionAttributeId: vertexPositionAttributeId,
-		programId:                 programId,
-	}
-
-	return triangle
-
-}
-
-func (triangle *Triangle2D) Render() {
-
-	gl.UseProgram(triangle.programId)
-	gl.BindVertexArray(triangle.vertexArrayObjectId)
-	gl.DrawArrays(gl.TRIANGLES, 0, 3)
-	gl.BindVertexArray(0)
 
 }
 
@@ -132,6 +73,9 @@ func renderRoutine(waitGroup *sync.WaitGroup) {
 	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 
 	triangle := NewTriangle2D(-1, -1, 1, -1, 0, 1)
+	triangle.camera = camera.NewOrtho()
+
+	defer triangle.Close()
 
 	for window.GetKey(glfw.KeyEscape) != glfw.Press && !window.ShouldClose() {
 
