@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/fapiko/go-asteroids/camera"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
@@ -19,11 +18,11 @@ func main() {
 
 	waitGroup.Wait()
 
-	// Render ship
-
-	// Render asteroid
+	// Render ship - Done
 
 	// Move ship
+
+	// Render asteroid
 
 	// Collision detect ship -> asteroid
 
@@ -72,18 +71,16 @@ func renderRoutine(waitGroup *sync.WaitGroup) {
 
 	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 
-	triangle := NewTriangle2D(-1, -1, 1, -1, 0, 1)
-	triangle.camera = camera.NewOrtho()
+	ship := NewShip()
+	defer ship.Close()
 
-	defer triangle.Close()
+	window.SetKeyCallback(ship.KeyCallback)
 
 	for window.GetKey(glfw.KeyEscape) != glfw.Press && !window.ShouldClose() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		gl.UseProgram(triangle.programId)
-
-		triangle.Render()
+		ship.Render()
 
 		window.SwapBuffers()
 		glfw.PollEvents()
